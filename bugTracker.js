@@ -33,7 +33,7 @@ export const Projects = sequelize.define("Projects",
 }
 )
 
-export const ProjectsxMembers = sequelize.define("ProjectxMembers",
+export const ProjectsxMembers = sequelize.define("ProjectsxMembers",
 {
 
     Id: {
@@ -88,9 +88,14 @@ export const Bugs = sequelize.define("Bugs",
     }
 });
 
-Projects.hasMany(ProjectsxMembers);
-Members.hasMany(ProjectsxMembers);
+//Projects.hasMany(ProjectsxMembers);
+//Members.hasMany(ProjectsxMembers);
+
 Projects.hasMany(Bugs);
+
+Projects.belongsToMany(Members,{through:"ProjectsxMembers"});
+Members.belongsToMany(Projects,{through:"ProjectsxMembers"});
+
 
 sequelize.authenticate().then(()=>{
     console.log("Connected to the database!")
