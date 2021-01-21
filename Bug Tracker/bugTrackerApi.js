@@ -1,7 +1,12 @@
 import {app,router} from "./init/serverInit.js"
 import seq from "sequelize"
-import {Projects,ProjectsxMembers,Members, Bugs} from "./bugTracker.js"
+import {Projects,ProjectsxMembers,Members, Bugs,sequelize} from "./bugTracker.js"
 import { response } from "express"
+
+
+
+
+
 
 
 router.route("/addProject").post((req,res)=>{
@@ -103,6 +108,12 @@ router.route("/getProjectIdByName/:name").get((req,res)=>{
 
 })
 
+router.route("/getBugReservation/:id").get((req,res)=>{
+    Bugs.findAll({ where:{
+      Id:req.params.id
+  }}).then(response=>res.json(response)).catch(error=>console.log(error));
+  })
+
 
 router.route("/login/:id/:pass").get((request, response) => {
    
@@ -151,6 +162,24 @@ router.route("/addMemberToProject3").post((req,res)=>{
         ProjectId: req.body.projId
     }).then(res=>response.json("ok")).catch(err=>error.log(err));
 })
+
+
+router.route("/reserveBug").post((req,res)=>{
+
+
+
+    sequelize.query("UPDATE bugs SET BugReservationId ="+req.body.MemberId+ ",BugStatus = 'Reserved' where Id ="+req.body.BugId)
+    .then(resp=>res.json("ok"));
+     
+    
+
+})
+
+
+router.route("/addLinkToBug").post((req,res)=>{
+    sequelize.query("UPDATE bugs SET BugSolutionLink = "+ "'"+req.body.link+"'" + ",BugStatus = 'Solved' where Id = " +req.body.bugid).then(resp=>res.json("ok"));
+})
+
 
 
 var port = 8000;

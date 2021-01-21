@@ -22,7 +22,11 @@ export default class ProjectList extends React.Component {
             bugLink: "N/A",
             bugDescription: "N/A",
             bugSeverity: "low",
-            bugPriority: "low"
+            bugPriority: "low",
+            AddSolution:false,
+            bugIdForSolution: 0,
+            bugToReserve: 0,
+            linkForBug: "",
 
         }
 
@@ -128,10 +132,24 @@ export default class ProjectList extends React.Component {
 
                                     <tr>{project.Bugs.map(bug => <table id="bugs-table">
                                         <th>{"Name: "}{bug.BugName}</th>
-                                        <tr>{"  Severity: "}{bug.BugSeverity}</tr>
+                                        <tr><button onClick={()=>{this.reserveBug(bug.Id,localStorage.getItem("id"),project.Id)}}>RESERVE BUG</button><button onClick={()=>{this.addSolution(true,bug.Id,project.Id)}}>ADD SOLUTION</button>
+                                        <Modal isOpen={this.state.AddSolution}>
+                                            <div class="solution-add-div">
+                                            <input id="solution-add-input" onInput={(e)=>{this.setState({linkForBug:e.target.value})}}></input>
+                                            <button id="solution-add-button" onClick={()=>{this.addLinkToSolution()}}>SAVE</button>
+                                            <button id="solution-add-button" onClick={()=>{this.setState({AddSolution: false})}}>CLOSE</button>
+                                            </div>
+                                        </Modal>
+                                        </tr>
+                                        <tr>{"Description: "}{bug.BugDescription}</tr>
+                                        <tr>{"Priority: "}{bug.BugPriority}</tr>
+                                        <tr>{"Severity: "}{bug.BugSeverity}</tr>
                                         <tr>{"Link to bug: "}{bug.BugLink}</tr>
+                                        <tr>{"Status: "}{bug.BugStatus}</tr>
+                                        <tr>{"Reserved by (member id): "}{bug.BugReservationId}</tr>
+                                        
                                         <tr>{"Solution link: "}{bug.BugSolutionLink}</tr>
-
+                                        
                                     </table>
                                     )}</tr>
                                 </table>
@@ -151,11 +169,32 @@ export default class ProjectList extends React.Component {
         // console.log(e.target.innerHTML);
         //console.log(e.target.key);
         // console.log(this.state.bugSeverity);
-        console.log(this.state.proj);
+       // console.log(this.state.bugIdForSolution);
     }
 
     HandleKey(id) {
         console.log(id);
+    }
+
+    addSolution(bool,id,proj)
+    {   this.setState({bugIdForSolution:id});
+
+
+      fetch('http://localhost:8000/api/CheckIfMp/'+proj+'/'+localStorage.getItem("id"))
+      .then(res=>res.json())
+      .then(data=>{
+          if(data.length > 0)
+          {
+            this.setState({AddSolution:bool});
+          }
+          else
+          {
+              alert("You are not a member of this project!");
+          }
+      })
+
+
+       
     }
 
     addMember(idProj) {
@@ -184,6 +223,54 @@ export default class ProjectList extends React.Component {
 
 
 
+    }
+
+
+    addLinkToSolution()
+    {
+         
+       axios.post('http://localhost:8000/api/addLinkToBug',{
+           bugid: this.state.bugIdForSolution,
+           link: this.state.linkForBug
+       }).then(()=>{window.location.reload()}).then(()=>{this.setState({AddSolution:false})})
+
+    }
+
+    reserveBug(bug,member,proj)
+    {
+
+        this.setState({bugToReserve:bug})
+        
+
+        fetch('http://localhost:8000/api/CheckIfMp/'+proj+'/'+member).then(res2=>res2.json()).then(data2=>{
+            if(data2.length>0)
+            {
+                 
+
+                fetch('http://localhost:8000/api/getBugReservation/'+bug).then(res=>res.json()).then(data=>{
+            if(data[0].BugReservationId >0)
+            {   
+                alert("Bug is already reserved!")
+            }
+            else
+            {
+                axios.post('http://localhost:8000/api/reserveBug',{
+                    MemberId:member,
+                    BugId: bug
+                }).then(window.location.reload());
+            }
+        })
+
+            }
+            else
+            {    
+                alert("You are not a member of this project!")
+            }
+        })
+           
+        
+
+        
     }
 
     addBug()
@@ -241,8 +328,25 @@ export default class ProjectList extends React.Component {
     setBugsIsOpen(bool,id) {
 
 
-        this.setState({proj:id, bugsIsOpen: bool,bugName:"N/A",bugDescription:"N/A",bugLink:"N/A",bugSeverity:"minimal",bugPriority:"low" });
-        // console.log(this.state.proj);
+
+        fetch('http://localhost:8000/api/CheckIfMp/'+id+'/'+localStorage.getItem("id"))
+        .then(res=>res.json())
+        .then(data=>{
+            if(data.length > 0)
+            {
+                this.setState({proj:id, bugsIsOpen: bool,bugName:"N/A",bugDescription:"N/A",bugLink:"N/A",bugSeverity:"minimal",bugPriority:"low" });
+            }
+            else
+            {
+                alert("You are not a member of this project!");
+            }
+        })
+  
+  
+        
+
+       
+        
     }
 
 }

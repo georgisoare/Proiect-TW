@@ -87,6 +87,23 @@ tr{
   align-items:center;
   border: none;
 
+  border-top: 1px solid black;
+
+}
+
+
+#solution-add-input{
+  height: 14px;
+}
+
+#solution-add-button{
+  height: 40px;
+}
+
+.solution-add-div{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
 }
 
 

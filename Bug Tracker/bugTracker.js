@@ -1,7 +1,6 @@
 import Sequelize from "sequelize";
 
-
-const sequelize = new Sequelize(
+export const sequelize = new Sequelize(
     "bugtracker","appointment","google",{
         host:"localhost",
         dialect:"mssql",
@@ -151,5 +150,8 @@ sequelize.sync({force:false,alter:false}).then(()=>
 {
     console.log("Database synced!");
 }).catch(err=>console.error(err));
+
+
+
 
 
